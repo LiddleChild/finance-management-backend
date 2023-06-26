@@ -4,6 +4,7 @@ import (
 	"backend/controllers"
 	"backend/utils"
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -11,7 +12,16 @@ import (
 
 func main() {
 	// Load dotenv
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Initiate Firestore connect
+	err = utils.InitiateFirestoreClient()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Create fiber instance
 	app := fiber.New()
@@ -20,4 +30,7 @@ func main() {
 
 	// Listen to port
 	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))
+
+	// Close connection
+	utils.CloseFirestoreClient()
 }
