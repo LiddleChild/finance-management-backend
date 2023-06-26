@@ -27,6 +27,8 @@ func main() {
 	app := fiber.New()
 
 	app.Post("/auth/create_user", controllers.CreateUser)
+	app.Post("/auth/login", controllers.Login)
+	app.Post("/auth/logout", controllers.Logout)
 
 	// Listen to port
 	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))

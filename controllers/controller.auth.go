@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 
@@ -53,4 +55,95 @@ func CreateUser(c *fiber.Ctx) error {
 	return c.
 		Status(http.StatusCreated).
 		SendString(utils.JSONMessage("User created successfully"))
+}
+
+func Login(c *fiber.Ctx) error {
+	// Get body from request
+	userCredentials := models.UserCredentials{}
+	err := c.BodyParser(&userCredentials)
+	if err != nil {
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage("Empty user credentials"))
+	}
+
+	// Validate user information
+	err = utils.GetValidator().Struct(userCredentials)
+	if err != nil {
+		errs := utils.ErrorsToString(utils.TranslateError(err))
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage(
+				fmt.Sprintf("Invalid user credentials: %s", strings.Join(errs, ", "))))
+	}
+
+	// Get user from email
+	user, err, ok := db.GetUserByField("Email", userCredentials.Email)
+	if err != nil {
+		fmt.Println(err.Error())
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Couldn't get user credentials"))
+	}
+
+	// Check for valid email with matched password
+	if !ok || !utils.CheckPassword(user.Password, userCredentials.Password) {
+		return c.
+			Status(http.StatusUnauthorized).
+			SendString(utils.JSONMessage("Email and Password mismatch"))
+	}
+
+	// JWT expired in 1 days
+	expireDate := time.Now().Add(time.Hour * 24)
+
+	// Create claim
+	claim := models.JWTClaim{
+		UserId: user.UserId,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expireDate),
+		},
+	}
+
+	// Create JWT token with claim
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	
+	// Sign token with secret key
+	accessToken, err := token.SignedString([]byte(utils.GetEnv("JWT_PRIVATE_KEY", "")))
+	if err != nil {
+		fmt.Println(err.Error())
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Couldn't log you in"))
+	}
+
+	// Create httpOnly cookie
+	cookie := &fiber.Cookie{
+		HTTPOnly: true,
+		Name: "access_token",
+		Value: accessToken,
+		Expires: expireDate,
+	}
+
+	// Set cookie
+	c.Cookie(cookie)
+
+	return c.
+		Status(http.StatusOK).
+		SendString(utils.JSONMessage("You are logged in!"))
+}
+
+func Logout(c *fiber.Ctx) error {
+	// Create empty cookie
+	cookie := &fiber.Cookie{
+		HTTPOnly: true,
+		Name: "access_token",
+		Value: "",
+	}
+
+	// Set cookie
+	c.Cookie(cookie)
+
+	return c.
+		Status(http.StatusOK).
+		SendString(utils.JSONMessage("You are logged out"))
 }

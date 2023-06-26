@@ -12,3 +12,8 @@ type RegisteringUser struct {
 	Email			string `json:"Email"    validate:"required"`
 	Password	string `json:"Password" validate:"required"`
 }
+
+type UserCredentials struct {
+	Email			string `json:"Email"    validate:"required"`
+	Password	string `json:"Password" validate:"required"`
+}
