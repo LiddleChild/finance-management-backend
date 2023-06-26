@@ -2,7 +2,7 @@ package utils
 
 import "encoding/json"
 
-func ErrorMessage(err string) string {
+func JSONMessage(err string) string {
 	msg := map[string]string {
 		"Message": err,
 	}

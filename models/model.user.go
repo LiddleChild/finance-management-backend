@@ -2,7 +2,13 @@ package models
 
 type User struct {
 	UserId		string `json:"UserId"`
-	Name			string `json:"Name"`
-	Email			string `json:"Email"`
-	Password	string `json:"Password"`
+	Name			string `json:"Name"     validate:"required"`
+	Email			string `json:"Email"    validate:"required"`
+	Password	string `json:"Password" validate:"required"`
+}
+
+type RegisteringUser struct {
+	Name			string `json:"Name"     validate:"required"`
+	Email			string `json:"Email"    validate:"required"`
+	Password	string `json:"Password" validate:"required"`
 }
