@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/controllers"
 	"backend/utils"
 	"fmt"
 
@@ -15,11 +16,7 @@ func main() {
 	// Create fiber instance
 	app := fiber.New()
 
-	app.Get("/", func (c *fiber.Ctx) error {
-		return c.
-			Status(200).
-			SendString("Hello, World!")
-	})
+	app.Post("/auth/create_user", controllers.CreateUser)
 
 	// Listen to port
 	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))
