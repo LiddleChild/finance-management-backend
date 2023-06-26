@@ -8,3 +8,11 @@ type Transaction struct {
 	Category			string	`json:"Category"`
 	Wallet				string	`json:"Wallet"`
 }
+
+type CreatingTransaction struct {
+	Amount				float64	`json:"Amount"    validate:"required"`
+	Note					string	`json:"Note"`
+	Timestamp			int64		`json:"Timestamp" validate:"required"`
+	Category			string	`json:"Category"  validate:"required"`
+	Wallet				string	`json:"Wallet"    validate:"required"`
+}
