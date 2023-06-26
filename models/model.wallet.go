@@ -1,7 +1,7 @@
 package models
 
 type Wallet struct {
-	WalletId	string
-	Color			int16
-	Label			string
+	WalletId	string	`json:"WalletId"`
+	Color			int16		`json:"Color"`
+	Label			string	`json:"Label"`
 }

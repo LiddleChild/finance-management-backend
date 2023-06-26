@@ -1,7 +1,7 @@
 package models
 
 type Category struct {
-	CategoryId	string
-	Color				int16
-	Label				string
+	CategoryId	string	`json:"CategoryId"`
+	Color				int16		`json:"Color"`
+	Label				string	`json:"Label"`
 }
