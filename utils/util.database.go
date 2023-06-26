@@ -10,7 +10,7 @@ import (
 
 var client *firestore.Client
 
-func GetFirstoreClient() *firestore.Client {
+func GetFirestoreClient() *firestore.Client {
 	return client
 }
 

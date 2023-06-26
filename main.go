@@ -32,6 +32,8 @@ func main() {
 	app.Post("/auth/logout", controllers.Logout)
 	
 	app.Get("/transaction", middlewares.RequireAccessToken(controllers.GetTransaction))
+	app.Get("/category", middlewares.RequireAccessToken(controllers.GetCategoryMap))
+	app.Get("/wallet", middlewares.RequireAccessToken(controllers.GetWalletMap))
 
 	// Listen to port
 	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))

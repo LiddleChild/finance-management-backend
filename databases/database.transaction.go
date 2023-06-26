@@ -8,8 +8,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func GetTransactions(UserId string) ([]models.Transaction, error) {
-	dbClient := utils.GetFirstoreClient()
+func GetTransactionsByUserId(UserId string) ([]models.Transaction, error) {
+	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
 	transactionLists := make([]models.Transaction, 0)

@@ -9,7 +9,7 @@ import (
 )
 
 func GetUserByField(field string, value string) (models.User, error, bool) {
-	dbClient := utils.GetFirstoreClient()
+	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
 	user := models.User{}
@@ -27,7 +27,7 @@ func GetUserByField(field string, value string) (models.User, error, bool) {
 }
 
 func DoesUserExistByField(field string, value string) bool {
-	dbClient := utils.GetFirstoreClient()
+	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
 	itr := dbClient.Collection("user").Where(field, "==", value).Documents(ctx)
@@ -37,7 +37,7 @@ func DoesUserExistByField(field string, value string) bool {
 }
 
 func CreateUser(registeringUser models.RegisteringUser) error {
-	dbClient := utils.GetFirstoreClient()
+	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
 	_, _, err := dbClient.Collection("user").Add(ctx, registeringUser)

@@ -12,7 +12,7 @@ import (
 
 func GetTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
-	transactionLists, err := databases.GetTransactions(userId)
+	transactionLists, err := databases.GetTransactionsByUserId(userId)
 	if err != nil {
 		fmt.Println(err)
 		return c.
