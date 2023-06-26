@@ -32,6 +32,8 @@ func main() {
 	app.Post("/auth/logout", controllers.Logout)
 	
 	app.Get("/transaction", middlewares.RequireAccessToken(controllers.GetTransaction))
+	app.Post("/transaction/create", middlewares.RequireAccessToken(controllers.CreateTransaction))
+
 	app.Get("/category", middlewares.RequireAccessToken(controllers.GetCategoryMap))
 	app.Get("/wallet", middlewares.RequireAccessToken(controllers.GetWalletMap))
 

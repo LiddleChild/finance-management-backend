@@ -34,3 +34,12 @@ func GetTransactionsByUserId(UserId string) ([]models.Transaction, error) {
 
 	return transactionLists, nil
 }
+
+func CreateTransaction(userId string, creatingTransaction models.CreatingTransaction) error {
+	dbClient := utils.GetFirestoreClient()
+	ctx := context.Background()
+
+	_, _, err := dbClient.Collection("user").Doc(userId).Collection("transaction").Add(ctx, creatingTransaction)
+
+	return err
+}
