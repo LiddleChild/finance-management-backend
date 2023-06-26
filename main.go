@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/controllers"
+	"backend/middlewares"
 	"backend/utils"
 	"fmt"
 	"log"
@@ -29,6 +30,8 @@ func main() {
 	app.Post("/auth/create_user", controllers.CreateUser)
 	app.Post("/auth/login", controllers.Login)
 	app.Post("/auth/logout", controllers.Logout)
+	
+	app.Get("/transaction", middlewares.RequireAccessToken(controllers.GetTransaction))
 
 	// Listen to port
 	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))
