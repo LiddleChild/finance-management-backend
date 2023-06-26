@@ -2,9 +2,9 @@ package utils
 
 import "encoding/json"
 
-func JSONMessage(err string) string {
+func JSONMessage(str string) string {
 	msg := map[string]string {
-		"Message": err,
+		"Message": str,
 	}
 
 	jsonStr, _ := json.Marshal(msg)
