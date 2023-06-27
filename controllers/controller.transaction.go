@@ -51,6 +51,14 @@ func CreateTransaction(c *fiber.Ctx) error {
 				fmt.Sprintf("Invalid transaction information: %s", strings.Join(errs, ", "))))
 	}
 
+	// Validate wallet and category ids
+	if !(databases.DoesWalletExist(userId, creatingTransaction.Wallet) &&
+		databases.DoesCategoryExist(userId, creatingTransaction.Category)) {
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage("Invalid wallet or category"))
+	}
+
 	// Create transaction
 	err = databases.CreateTransaction(userId, creatingTransaction)
 	if err != nil {
