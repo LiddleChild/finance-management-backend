@@ -36,3 +36,12 @@ func GetCategoryMapByUserId(userId string) (map[string]models.Category, error) {
 
 	return categoryMap, nil
 }
+
+func DoesCategoryExist(userId string, categoryId string) bool {
+	dbClient := utils.GetFirestoreClient()
+	ctx := context.Background()
+
+	_, err := dbClient.Collection("user").Doc(userId).Collection("category").Doc(categoryId).Get(ctx)
+	
+	return err == nil
+}

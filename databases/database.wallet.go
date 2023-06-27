@@ -36,3 +36,12 @@ func GetWalletMapByUserId(userId string) (map[string]models.Wallet, error) {
 
 	return walletMap, nil
 }
+
+func DoesWalletExist(userId string, walletId string) bool {
+	dbClient := utils.GetFirestoreClient()
+	ctx := context.Background()
+
+	_, err := dbClient.Collection("user").Doc(userId).Collection("wallet").Doc(walletId).Get(ctx)
+	
+	return err == nil
+}
