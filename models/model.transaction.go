@@ -20,5 +20,4 @@ type CreatingTransaction struct {
 type TransactionFilter struct {
 	Month int `query:"month"`
 	Year  int `query:"year"`
-	Range int `query:"range"`
 }

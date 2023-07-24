@@ -6,6 +6,7 @@ import (
 	"backend/utils"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 
@@ -14,15 +15,35 @@ import (
 
 func GetTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
-	transactionFilter := models.TransactionFilter{Month: -1, Year: -1, Range: -1}
-	c.QueryParser(&transactionFilter)
+	filter := models.TransactionFilter{Month: -1, Year: -1}
+	c.QueryParser(&filter)
 
-	transactionLists, err := databases.GetTransactionsByUserId(
-		userId,
-		transactionFilter.Month,
-		transactionFilter.Year,
-		transactionFilter.Range,
-	)
+	var startEpoch int64 = math.MinInt64
+	var endEpoch int64 = math.MaxInt64
+	if filter.Month > 0 && filter.Year > 0 {
+		startEpoch, endEpoch = utils.GetMonthsRange(filter.Month, filter.Year, 1)
+	}
+
+	transactionLists, err := databases.GetTransactionsInRangeByUserId(userId, startEpoch, endEpoch)
+	if err != nil {
+		fmt.Println(err)
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Couldn't get transactions"))
+	}
+
+	jsonStr, err := json.Marshal(transactionLists)
+
+	return c.
+		Status(http.StatusOK).
+		SendString(string(jsonStr))
+}
+
+func GetTodayTransaction(c *fiber.Ctx) error {
+	userId := c.Locals("UserId").(string)
+
+	startEpoch, endEpoch := utils.GetTodayRange()
+	transactionLists, err := databases.GetTransactionsInRangeByUserId(userId, startEpoch, endEpoch)
 	if err != nil {
 		fmt.Println(err)
 		return c.
