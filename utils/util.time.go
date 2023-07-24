@@ -15,7 +15,7 @@ func GetMonthsRange(month int, year int, month_range int) (int64, int64) {
 }
 
 func GetTodayRange() (int64, int64) {
-	currentTime := time.Unix(1690787558, 0)
+	currentTime := time.Now()
 	startOfDay := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC)
 
 	var endOfDay time.Time
