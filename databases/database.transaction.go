@@ -5,6 +5,7 @@ import (
 	"backend/utils"
 	"context"
 
+	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 )
 
@@ -14,7 +15,12 @@ func GetTransactionsByUserId(UserId string) ([]models.Transaction, error) {
 
 	transactionLists := make([]models.Transaction, 0)
 
-	itr := dbClient.Collection("user").Doc(UserId).Collection("transaction").Documents(ctx)
+	itr := dbClient.Collection("user").
+		Doc(UserId).
+		Collection("transaction").
+		OrderBy("Timestamp", firestore.Desc).
+		Documents(ctx)
+	
 	for {
 		transactionDoc, err := itr.Next()
 		if err == iterator.Done {
