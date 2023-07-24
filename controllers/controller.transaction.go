@@ -14,7 +14,15 @@ import (
 
 func GetTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
-	transactionLists, err := databases.GetTransactionsByUserId(userId)
+	transactionFilter := models.TransactionFilter{Month: -1, Year: -1, Range: -1}
+	c.QueryParser(&transactionFilter)
+
+	transactionLists, err := databases.GetTransactionsByUserId(
+		userId,
+		transactionFilter.Month,
+		transactionFilter.Year,
+		transactionFilter.Range,
+	)
 	if err != nil {
 		fmt.Println(err)
 		return c.
