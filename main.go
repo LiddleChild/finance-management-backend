@@ -36,6 +36,10 @@ func main() {
 	app.Post("/transaction/create", middlewares.RequireAccessToken(controllers.CreateTransaction))
 
 	app.Get("/category", middlewares.RequireAccessToken(controllers.GetCategoryMap))
+	app.Post("/category", middlewares.RequireAccessToken(controllers.CreateCategory))
+	app.Patch("/category", middlewares.RequireAccessToken(controllers.UpdateCategory))
+	app.Delete("/category", middlewares.RequireAccessToken(controllers.DeleteCategory))
+
 	app.Get("/wallet", middlewares.RequireAccessToken(controllers.GetWalletMap))
 
 	// Listen to port
