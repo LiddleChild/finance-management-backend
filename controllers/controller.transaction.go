@@ -61,9 +61,12 @@ func GetTodayTransaction(c *fiber.Ctx) error {
 func CreateTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
+	transaction := models.Transaction{
+		TransactionId: utils.GenerateUUID(),
+	}
+
 	// Parse body
-	creatingTransaction := models.CreatingTransaction{}
-	err := c.BodyParser(&creatingTransaction)
+	err := c.BodyParser(&transaction)
 	if err != nil {
 		return c.
 			Status(http.StatusBadRequest).
@@ -71,7 +74,7 @@ func CreateTransaction(c *fiber.Ctx) error {
 	}
 
 	// Validate user information
-	err = utils.GetValidator().Struct(creatingTransaction)
+	err = utils.GetValidator().Struct(transaction)
 	if err != nil {
 		errs := utils.ErrorsToString(utils.TranslateError(err))
 		return c.
@@ -81,15 +84,15 @@ func CreateTransaction(c *fiber.Ctx) error {
 	}
 
 	// Validate wallet and category ids
-	if !(databases.DoesWalletExist(userId, creatingTransaction.Wallet) &&
-		databases.DoesCategoryExist(userId, creatingTransaction.Category)) {
+	if !(databases.DoesWalletExist(userId, transaction.Wallet) &&
+		databases.DoesCategoryExist(userId, transaction.Category)) {
 		return c.
 			Status(http.StatusBadRequest).
 			SendString(utils.JSONMessage("Invalid wallet or category"))
 	}
 
 	// Create transaction
-	err = databases.CreateTransaction(userId, creatingTransaction)
+	err = databases.CreateTransaction(userId, transaction)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).

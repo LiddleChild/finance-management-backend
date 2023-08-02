@@ -43,11 +43,15 @@ func GetTransactionsInRangeByUserId(userId string, startEpoch int64, endEpoch in
 	return transactionLists, nil
 }
 
-func CreateTransaction(userId string, creatingTransaction models.CreatingTransaction) error {
+func CreateTransaction(userId string, transaction models.Transaction) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	_, _, err := dbClient.Collection("user").Doc(userId).Collection("transaction").Add(ctx, creatingTransaction)
+	_, err := dbClient.Collection("user").
+		Doc(userId).
+		Collection("transaction").
+		Doc(transaction.TransactionId).
+		Set(ctx, transaction)
 
 	return err
 }
