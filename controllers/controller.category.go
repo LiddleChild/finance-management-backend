@@ -40,9 +40,12 @@ Create category
 func CreateCategory(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
+	category := models.Category{
+		CategoryId: utils.GenerateUUID(),
+	}
+
 	// Parse body
-	creatingCategory := models.CreatingCategory{}
-	err := c.BodyParser(&creatingCategory)
+	err := c.BodyParser(&category)
 	if err != nil {
 		return c.
 			Status(http.StatusBadRequest).
@@ -50,7 +53,7 @@ func CreateCategory(c *fiber.Ctx) error {
 	}
 
 	// Validate user information
-	err = utils.GetValidator().Struct(creatingCategory)
+	err = utils.GetValidator().Struct(category)
 	if err != nil {
 		errs := utils.ErrorsToString(utils.TranslateError(err))
 		return c.
@@ -60,7 +63,7 @@ func CreateCategory(c *fiber.Ctx) error {
 	}
 
 	// Create category
-	err = databases.CreateCategory(userId, creatingCategory)
+	err = databases.CreateCategory(userId, category)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).

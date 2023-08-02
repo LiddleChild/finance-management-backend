@@ -54,14 +54,15 @@ func DoesCategoryExist(userId string, categoryId string) bool {
 	return err == nil
 }
 
-func CreateCategory(userId string, creatingCategory models.CreatingCategory) error {
+func CreateCategory(userId string, category models.Category) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	_, _, err := dbClient.Collection("user").
+	_, err := dbClient.Collection("user").
 		Doc(userId).
 		Collection("category").
-		Add(ctx, creatingCategory)
+		Doc(category.CategoryId).
+		Set(ctx, category)
 
 	return err
 }
