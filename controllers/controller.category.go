@@ -42,6 +42,7 @@ func CreateCategory(c *fiber.Ctx) error {
 
 	category := models.Category{
 		CategoryId: utils.GenerateUUID(),
+		Editable:   true,
 	}
 
 	// Parse body
@@ -88,6 +89,18 @@ func UpdateCategory(c *fiber.Ctx) error {
 		return c.
 			Status(http.StatusBadRequest).
 			SendString(utils.JSONMessage("Empty transaction information"))
+	}
+
+	// Check if editable
+	ok, err := databases.IsCategoryEditable(userId, category.CategoryId)
+	if err != nil {
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Cannot find category"))
+	} else if !ok {
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Cannot edit category"))
 	}
 
 	// Validate user information

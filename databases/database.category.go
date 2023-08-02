@@ -5,6 +5,7 @@ import (
 	"backend/utils"
 	"context"
 
+	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 )
 
@@ -54,6 +55,28 @@ func DoesCategoryExist(userId string, categoryId string) bool {
 	return err == nil
 }
 
+func IsCategoryEditable(userId string, categoryId string) (bool, error) {
+	dbClient := utils.GetFirestoreClient()
+	ctx := context.Background()
+
+	doc, err := dbClient.Collection("user").
+		Doc(userId).
+		Collection("category").
+		Doc(categoryId).
+		Get(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	category := models.Category{}
+	err = doc.DataTo(&category)
+	if err != nil {
+		return false, err
+	}
+
+	return category.Editable, nil
+}
+
 func CreateCategory(userId string, category models.Category) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
@@ -75,9 +98,14 @@ func UpdateCategory(userId string, category models.Category) error {
 		Doc(userId).
 		Collection("category").
 		Doc(category.CategoryId).
-		Set(ctx, map[string]interface{}{
-			"Label": category.Label,
-			"Color": category.Color,
+		Update(ctx, []firestore.Update{
+			{
+				Path:  "Label",
+				Value: category.Label,
+			}, {
+				Path:  "Color",
+				Value: category.Color,
+			},
 		})
 
 	return err
@@ -87,11 +115,15 @@ func DeleteCategory(userId string, category models.DeletingCategory) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	_, err := dbClient.Collection("user").
+	doc, err := dbClient.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Doc(category.CategoryId).
-		Delete(ctx)
+		Get(ctx)
+	if err != nil {
+		return err
+	}
 
+	_, err = doc.Ref.Delete(ctx)
 	return err
 }
