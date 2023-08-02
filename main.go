@@ -41,6 +41,9 @@ func main() {
 	app.Delete("/category/", middlewares.RequireAccessToken(controllers.DeleteCategory))
 
 	app.Get("/wallet", middlewares.RequireAccessToken(controllers.GetWalletMap))
+	app.Post("/wallet/", middlewares.RequireAccessToken(controllers.CreateWallet))
+	app.Patch("/wallet/", middlewares.RequireAccessToken(controllers.UpdateWallet))
+	app.Delete("/wallet/", middlewares.RequireAccessToken(controllers.DeleteWallet))
 
 	// Listen to port
 	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))
