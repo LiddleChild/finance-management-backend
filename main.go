@@ -27,6 +27,8 @@ func main() {
 	// Create fiber instance
 	app := fiber.New()
 
+	app.Get("/", controllers.Ping)
+
 	app.Post("/auth/create_user", controllers.CreateUser)
 	app.Post("/auth/login", controllers.Login)
 	app.Post("/auth/logout", controllers.Logout)
@@ -46,7 +48,7 @@ func main() {
 	app.Delete("/wallet/", middlewares.RequireAccessToken(controllers.DeleteWallet))
 
 	// Listen to port
-	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))
+	app.Listen(fmt.Sprintf(":%s", utils.GetEnv("PORT", "8080")))
 
 	// Close connection
 	utils.CloseFirestoreClient()
