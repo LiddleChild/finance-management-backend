@@ -13,3 +13,7 @@ type TransactionFilter struct {
 	Month int `query:"month"`
 	Year  int `query:"year"`
 }
+
+type DeletingTransaction struct {
+	TransactionId string `json:"TransactionId" validate:"required"`
+}

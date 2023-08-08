@@ -55,3 +55,33 @@ func CreateTransaction(userId string, transaction models.Transaction) error {
 
 	return err
 }
+
+func UpdateTransaction(userId string, transaction models.Transaction) error {
+	dbClient := utils.GetFirestoreClient()
+	ctx := context.Background()
+
+	_, err := dbClient.Collection("user").
+		Doc(userId).
+		Collection("transaction").
+		Doc(transaction.TransactionId).
+		Set(ctx, transaction)
+
+	return err
+}
+
+func DeleteTransaction(userId string, transaction models.DeletingTransaction) error {
+	dbClient := utils.GetFirestoreClient()
+	ctx := context.Background()
+
+	doc, err := dbClient.Collection("user").
+		Doc(userId).
+		Collection("transaction").
+		Doc(transaction.TransactionId).
+		Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = doc.Ref.Delete(ctx)
+	return err
+}

@@ -103,3 +103,79 @@ func CreateTransaction(c *fiber.Ctx) error {
 		Status(http.StatusCreated).
 		SendString(utils.JSONMessage("Transaction created"))
 }
+
+/*
+Update transaction
+*/
+func UpdateTransaction(c *fiber.Ctx) error {
+	userId := c.Locals("UserId").(string)
+
+	// Parse body
+	transaction := models.Transaction{}
+	err := c.BodyParser(&transaction)
+	if err != nil {
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage("Empty transaction information"))
+	}
+
+	// Validate user information
+	err = utils.GetValidator().Struct(transaction)
+	if err != nil {
+		errs := utils.ErrorsToString(utils.TranslateError(err))
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage(
+				fmt.Sprintf("Invalid transaction information: %s", strings.Join(errs, ", "))))
+	}
+
+	// Update transaction
+	err = databases.UpdateTransaction(userId, transaction)
+	if err != nil {
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Couldn't update transaction"))
+	}
+
+	return c.
+		Status(http.StatusCreated).
+		SendString(utils.JSONMessage("Transaction updated"))
+}
+
+/*
+Delete transaction
+*/
+func DeleteTransaction(c *fiber.Ctx) error {
+	userId := c.Locals("UserId").(string)
+
+	// Parse body
+	deletingTransaction := models.DeletingTransaction{}
+	err := c.BodyParser(&deletingTransaction)
+	if err != nil {
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage("Empty transaction information"))
+	}
+
+	// Validate user information
+	err = utils.GetValidator().Struct(deletingTransaction)
+	if err != nil {
+		errs := utils.ErrorsToString(utils.TranslateError(err))
+		return c.
+			Status(http.StatusBadRequest).
+			SendString(utils.JSONMessage(
+				fmt.Sprintf("Invalid transaction information: %s", strings.Join(errs, ", "))))
+	}
+
+	// Delete category
+	err = databases.DeleteTransaction(userId, deletingTransaction)
+	if err != nil {
+		return c.
+			Status(http.StatusConflict).
+			SendString(utils.JSONMessage("Couldn't delete transaction"))
+	}
+
+	return c.
+		Status(http.StatusCreated).
+		SendString(utils.JSONMessage("Transaction deleted"))
+}
