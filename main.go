@@ -48,7 +48,7 @@ func main() {
 	app.Delete("/wallet/", middlewares.RequireAccessToken(controllers.DeleteWallet))
 
 	// Listen to port
-	app.Listen(fmt.Sprintf(":%s", utils.GetEnv("PORT", "8080")))
+	app.Listen(fmt.Sprintf("localhost:%s", utils.GetEnv("PORT", "8080")))
 
 	// Close connection
 	utils.CloseFirestoreClient()
