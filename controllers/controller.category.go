@@ -138,7 +138,7 @@ func DeleteCategory(c *fiber.Ctx) error {
 	if err != nil {
 		return c.
 			Status(http.StatusBadRequest).
-			SendString(utils.JSONMessage("Empty transaction information"))
+			SendString(utils.JSONMessage("Empty category information"))
 	}
 
 	// Validate user information

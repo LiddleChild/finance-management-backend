@@ -122,7 +122,7 @@ func DeleteWallet(c *fiber.Ctx) error {
 	if err != nil {
 		return c.
 			Status(http.StatusBadRequest).
-			SendString(utils.JSONMessage("Empty transaction information"))
+			SendString(utils.JSONMessage("Empty wallet information"))
 	}
 
 	// Validate user information
