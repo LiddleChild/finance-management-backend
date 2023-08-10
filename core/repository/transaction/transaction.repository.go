@@ -1,7 +1,7 @@
-package databases
+package transaction
 
 import (
-	"backend/models"
+	"backend/core/models"
 	"backend/utils"
 	"context"
 
@@ -9,7 +9,13 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func GetTransactionsInRangeByUserId(userId string, startEpoch int64, endEpoch int64) ([]models.Transaction, error) {
+type TransactionRepository struct{}
+
+func NewTransactionRepository() *TransactionRepository {
+	return &TransactionRepository{}
+}
+
+func (repo *TransactionRepository) GetTransactionsInRangeByUserId(userId string, startEpoch int64, endEpoch int64) ([]models.Transaction, error) {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -43,7 +49,7 @@ func GetTransactionsInRangeByUserId(userId string, startEpoch int64, endEpoch in
 	return transactionLists, nil
 }
 
-func CreateTransaction(userId string, transaction models.Transaction) error {
+func (repo *TransactionRepository) CreateTransaction(userId string, transaction models.Transaction) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -56,7 +62,7 @@ func CreateTransaction(userId string, transaction models.Transaction) error {
 	return err
 }
 
-func UpdateTransaction(userId string, transaction models.Transaction) error {
+func (repo *TransactionRepository) UpdateTransaction(userId string, transaction models.Transaction) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -69,7 +75,7 @@ func UpdateTransaction(userId string, transaction models.Transaction) error {
 	return err
 }
 
-func DeleteTransaction(userId string, transaction models.DeletingTransaction) error {
+func (repo *TransactionRepository) DeleteTransaction(userId string, transaction models.DeletingTransaction) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 

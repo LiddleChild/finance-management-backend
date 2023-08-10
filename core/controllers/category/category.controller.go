@@ -1,8 +1,8 @@
-package controllers
+package category
 
 import (
-	"backend/databases"
-	"backend/models"
+	"backend/core/models"
+	"backend/package/repository/category"
 	"backend/utils"
 	"encoding/json"
 	"fmt"
@@ -12,12 +12,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+type CategoryController struct {
+	repo category.ICategoryRepository
+}
+
+func NewCategoryController(repo category.ICategoryRepository) *CategoryController {
+	return &CategoryController{
+		repo,
+	}
+}
+
 /*
 Get category
 */
-func GetCategoryMap(c *fiber.Ctx) error {
+func (con *CategoryController) GetCategoryMap(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
-	categoryMap, err := databases.GetCategoryMapByUserId(userId)
+	categoryMap, err := con.repo.GetCategoryMapByUserId(userId)
 	if err != nil {
 		if err != nil {
 			fmt.Println(err)
@@ -37,7 +47,7 @@ func GetCategoryMap(c *fiber.Ctx) error {
 /*
 Create category
 */
-func CreateCategory(c *fiber.Ctx) error {
+func (con *CategoryController) CreateCategory(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	category := models.Category{
@@ -64,7 +74,7 @@ func CreateCategory(c *fiber.Ctx) error {
 	}
 
 	// Create category
-	err = databases.CreateCategory(userId, category)
+	err = con.repo.CreateCategory(userId, category)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -79,7 +89,7 @@ func CreateCategory(c *fiber.Ctx) error {
 /*
 Update category
 */
-func UpdateCategory(c *fiber.Ctx) error {
+func (con *CategoryController) UpdateCategory(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	// Parse body
@@ -92,7 +102,7 @@ func UpdateCategory(c *fiber.Ctx) error {
 	}
 
 	// Check if editable
-	ok, err := databases.IsCategoryEditable(userId, category.CategoryId)
+	ok, err := con.repo.IsCategoryEditable(userId, category.CategoryId)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -114,7 +124,7 @@ func UpdateCategory(c *fiber.Ctx) error {
 	}
 
 	// Update category
-	err = databases.UpdateCategory(userId, category)
+	err = con.repo.UpdateCategory(userId, category)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -129,7 +139,7 @@ func UpdateCategory(c *fiber.Ctx) error {
 /*
 Delete category
 */
-func DeleteCategory(c *fiber.Ctx) error {
+func (con *CategoryController) DeleteCategory(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	// Parse body
@@ -152,7 +162,7 @@ func DeleteCategory(c *fiber.Ctx) error {
 	}
 
 	// Delete category
-	err = databases.DeleteCategory(userId, deletingCategory)
+	err = con.repo.DeleteCategory(userId, deletingCategory)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).

@@ -1,7 +1,7 @@
-package databases
+package category
 
 import (
-	"backend/models"
+	"backend/core/models"
 	"backend/utils"
 	"context"
 
@@ -9,13 +9,19 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func GetCategoryMapByUserId(userId string) (map[string]models.Category, error) {
-	dbClient := utils.GetFirestoreClient()
+type CategoryRepository struct{}
+
+func NewCategoryRepository() *CategoryRepository {
+	return &CategoryRepository{}
+}
+
+func (repo *CategoryRepository) GetCategoryMapByUserId(userId string) (map[string]models.Category, error) {
+	db := utils.GetFirestoreClient()
 	ctx := context.Background()
 
 	categoryMap := map[string]models.Category{}
 
-	itr := dbClient.Collection("user").
+	itr := db.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Documents(ctx)
@@ -33,20 +39,17 @@ func GetCategoryMapByUserId(userId string) (map[string]models.Category, error) {
 		category := models.Category{}
 		doc.DataTo(&category)
 
-		// Set id
-		category.CategoryId = doc.Ref.ID
-
 		categoryMap[category.CategoryId] = category
 	}
 
 	return categoryMap, nil
 }
 
-func DoesCategoryExist(userId string, categoryId string) bool {
-	dbClient := utils.GetFirestoreClient()
+func (repo *CategoryRepository) DoesCategoryExist(userId string, categoryId string) bool {
+	db := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	_, err := dbClient.Collection("user").
+	_, err := db.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Doc(categoryId).
@@ -55,11 +58,11 @@ func DoesCategoryExist(userId string, categoryId string) bool {
 	return err == nil
 }
 
-func IsCategoryEditable(userId string, categoryId string) (bool, error) {
-	dbClient := utils.GetFirestoreClient()
+func (repo *CategoryRepository) IsCategoryEditable(userId string, categoryId string) (bool, error) {
+	db := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	doc, err := dbClient.Collection("user").
+	doc, err := db.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Doc(categoryId).
@@ -77,11 +80,11 @@ func IsCategoryEditable(userId string, categoryId string) (bool, error) {
 	return category.Editable, nil
 }
 
-func CreateCategory(userId string, category models.Category) error {
-	dbClient := utils.GetFirestoreClient()
+func (repo *CategoryRepository) CreateCategory(userId string, category models.Category) error {
+	db := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	_, err := dbClient.Collection("user").
+	_, err := db.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Doc(category.CategoryId).
@@ -90,11 +93,11 @@ func CreateCategory(userId string, category models.Category) error {
 	return err
 }
 
-func UpdateCategory(userId string, category models.Category) error {
-	dbClient := utils.GetFirestoreClient()
+func (repo *CategoryRepository) UpdateCategory(userId string, category models.Category) error {
+	db := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	_, err := dbClient.Collection("user").
+	_, err := db.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Doc(category.CategoryId).
@@ -111,11 +114,11 @@ func UpdateCategory(userId string, category models.Category) error {
 	return err
 }
 
-func DeleteCategory(userId string, category models.DeletingCategory) error {
-	dbClient := utils.GetFirestoreClient()
+func (repo *CategoryRepository) DeleteCategory(userId string, category models.DeletingCategory) error {
+	db := utils.GetFirestoreClient()
 	ctx := context.Background()
 
-	doc, err := dbClient.Collection("user").
+	doc, err := db.Collection("user").
 		Doc(userId).
 		Collection("category").
 		Doc(category.CategoryId).

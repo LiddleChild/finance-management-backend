@@ -1,8 +1,8 @@
-package controllers
+package auth
 
 import (
-	db "backend/databases"
-	"backend/models"
+	"backend/core/models"
+	"backend/package/repository/user"
 	"backend/utils"
 	"fmt"
 	"net/http"
@@ -13,8 +13,17 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type AuthController struct {
+	repo user.IUserRepository
+}
 
-func CreateUser(c *fiber.Ctx) error {
+func NewAuthController(repo user.IUserRepository) *AuthController {
+	return &AuthController{
+		repo,
+	}
+}
+
+func (con *AuthController) CreateUser(c *fiber.Ctx) error {
 	// Parse body
 	registeringUser := models.RegisteringUser{}
 	err := c.BodyParser(&registeringUser)
@@ -35,7 +44,7 @@ func CreateUser(c *fiber.Ctx) error {
 	}
 
 	// Test for existing user
-	if db.DoesUserExistByField("Email", registeringUser.Email) {
+	if con.repo.DoesUserExistByField("Email", registeringUser.Email) {
 		return c.
 			Status(http.StatusConflict).
 			SendString(utils.JSONMessage("User already exists"))
@@ -45,7 +54,7 @@ func CreateUser(c *fiber.Ctx) error {
 	utils.SaltAndHashPassword(&registeringUser.Password)
 
 	// Create user in db
-	err = db.CreateUser(registeringUser)
+	err = con.repo.CreateUser(registeringUser)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -57,7 +66,7 @@ func CreateUser(c *fiber.Ctx) error {
 		SendString(utils.JSONMessage("User created successfully"))
 }
 
-func Login(c *fiber.Ctx) error {
+func (con *AuthController) Login(c *fiber.Ctx) error {
 	// Get body from request
 	userCredentials := models.UserCredentials{}
 	err := c.BodyParser(&userCredentials)
@@ -78,7 +87,7 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	// Get user from email
-	user, err, ok := db.GetUserByField("Email", userCredentials.Email)
+	user, err, ok := con.repo.GetUserByField("Email", userCredentials.Email)
 	if err != nil {
 		fmt.Println(err.Error())
 		return c.
@@ -106,7 +115,7 @@ func Login(c *fiber.Ctx) error {
 
 	// Create JWT token with claim
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	
+
 	// Sign token with secret key
 	accessToken, err := token.SignedString([]byte(utils.GetEnv("JWT_PRIVATE_KEY", "")))
 	if err != nil {
@@ -119,9 +128,9 @@ func Login(c *fiber.Ctx) error {
 	// Create httpOnly cookie
 	cookie := &fiber.Cookie{
 		HTTPOnly: true,
-		Name: "access_token",
-		Value: accessToken,
-		Expires: expireDate,
+		Name:     "access_token",
+		Value:    accessToken,
+		Expires:  expireDate,
 	}
 
 	// Set cookie
@@ -132,12 +141,12 @@ func Login(c *fiber.Ctx) error {
 		SendString(utils.JSONMessage("You are logged in!"))
 }
 
-func Logout(c *fiber.Ctx) error {
+func (con *AuthController) Logout(c *fiber.Ctx) error {
 	// Create empty cookie
 	cookie := &fiber.Cookie{
 		HTTPOnly: true,
-		Name: "access_token",
-		Value: "",
+		Name:     "access_token",
+		Value:    "",
 	}
 
 	// Set cookie

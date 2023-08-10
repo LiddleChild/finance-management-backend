@@ -1,7 +1,7 @@
-package databases
+package wallet
 
 import (
-	"backend/models"
+	"backend/core/models"
 	"backend/utils"
 	"context"
 
@@ -9,7 +9,13 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func GetWalletMapByUserId(userId string) (map[string]models.Wallet, error) {
+type WalletRepository struct{}
+
+func NewWalletRepository() *WalletRepository {
+	return &WalletRepository{}
+}
+
+func (repo *WalletRepository) GetWalletMapByUserId(userId string) (map[string]models.Wallet, error) {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -38,7 +44,7 @@ func GetWalletMapByUserId(userId string) (map[string]models.Wallet, error) {
 	return walletMap, nil
 }
 
-func DoesWalletExist(userId string, walletId string) bool {
+func (repo *WalletRepository) DoesWalletExist(userId string, walletId string) bool {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -47,7 +53,7 @@ func DoesWalletExist(userId string, walletId string) bool {
 	return err == nil
 }
 
-func CreateWallet(userId string, wallet models.Wallet) error {
+func (repo *WalletRepository) CreateWallet(userId string, wallet models.Wallet) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -60,7 +66,7 @@ func CreateWallet(userId string, wallet models.Wallet) error {
 	return err
 }
 
-func UpdateWallet(userId string, wallet models.Wallet) error {
+func (repo *WalletRepository) UpdateWallet(userId string, wallet models.Wallet) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 
@@ -81,7 +87,7 @@ func UpdateWallet(userId string, wallet models.Wallet) error {
 	return err
 }
 
-func DeleteWallet(userId string, wallet models.DeletingWallet) error {
+func (repo *WalletRepository) DeleteWallet(userId string, wallet models.DeletingWallet) error {
 	dbClient := utils.GetFirestoreClient()
 	ctx := context.Background()
 

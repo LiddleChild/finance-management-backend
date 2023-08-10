@@ -1,8 +1,8 @@
-package controllers
+package wallet
 
 import (
-	"backend/databases"
-	"backend/models"
+	"backend/core/models"
+	"backend/package/repository/wallet"
 	"backend/utils"
 	"encoding/json"
 	"fmt"
@@ -12,9 +12,19 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetWalletMap(c *fiber.Ctx) error {
+type WalletController struct {
+	repo wallet.IWalletRepository
+}
+
+func NewWalletController(repo wallet.IWalletRepository) *WalletController {
+	return &WalletController{
+		repo,
+	}
+}
+
+func (con *WalletController) GetWalletMap(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
-	walletMap, err := databases.GetWalletMapByUserId(userId)
+	walletMap, err := con.repo.GetWalletMapByUserId(userId)
 	if err != nil {
 		if err != nil {
 			fmt.Println(err)
@@ -34,7 +44,7 @@ func GetWalletMap(c *fiber.Ctx) error {
 /*
 Create wallet
 */
-func CreateWallet(c *fiber.Ctx) error {
+func (con *WalletController) CreateWallet(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	wallet := models.Wallet{
@@ -60,7 +70,7 @@ func CreateWallet(c *fiber.Ctx) error {
 	}
 
 	// Create wallet
-	err = databases.CreateWallet(userId, wallet)
+	err = con.repo.CreateWallet(userId, wallet)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -75,7 +85,7 @@ func CreateWallet(c *fiber.Ctx) error {
 /*
 Update wallet
 */
-func UpdateWallet(c *fiber.Ctx) error {
+func (con *WalletController) UpdateWallet(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	// Parse body
@@ -98,7 +108,7 @@ func UpdateWallet(c *fiber.Ctx) error {
 	}
 
 	// Update wallet
-	err = databases.UpdateWallet(userId, wallet)
+	err = con.repo.UpdateWallet(userId, wallet)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -113,7 +123,7 @@ func UpdateWallet(c *fiber.Ctx) error {
 /*
 Delete wallet
 */
-func DeleteWallet(c *fiber.Ctx) error {
+func (con *WalletController) DeleteWallet(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	// Parse body
@@ -136,7 +146,7 @@ func DeleteWallet(c *fiber.Ctx) error {
 	}
 
 	// Delete wallet
-	err = databases.DeleteWallet(userId, deletingWallet)
+	err = con.repo.DeleteWallet(userId, deletingWallet)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).

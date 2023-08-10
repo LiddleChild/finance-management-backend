@@ -1,8 +1,10 @@
-package controllers
+package transaction
 
 import (
-	"backend/databases"
-	"backend/models"
+	"backend/core/models"
+	"backend/package/repository/category"
+	"backend/package/repository/transaction"
+	"backend/package/repository/wallet"
 	"backend/utils"
 	"encoding/json"
 	"fmt"
@@ -13,7 +15,25 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetTransaction(c *fiber.Ctx) error {
+type TransactionController struct {
+	transactionRepo transaction.ITransactionRepository
+	walletRepo      wallet.IWalletRepository
+	categoryRepo    category.ICategoryRepository
+}
+
+func NewTransactionController(
+	transactionRepo transaction.ITransactionRepository,
+	walletRepo wallet.IWalletRepository,
+	categoryRepo category.ICategoryRepository) *TransactionController {
+
+	return &TransactionController{
+		transactionRepo,
+		walletRepo,
+		categoryRepo,
+	}
+}
+
+func (con *TransactionController) GetTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 	filter := models.TransactionFilter{Month: -1, Year: -1}
 	c.QueryParser(&filter)
@@ -24,7 +44,7 @@ func GetTransaction(c *fiber.Ctx) error {
 		startEpoch, endEpoch = utils.GetMonthsRange(filter.Month, filter.Year, 1)
 	}
 
-	transactionLists, err := databases.GetTransactionsInRangeByUserId(userId, startEpoch, endEpoch)
+	transactionLists, err := con.transactionRepo.GetTransactionsInRangeByUserId(userId, startEpoch, endEpoch)
 	if err != nil {
 		fmt.Println(err)
 		return c.
@@ -39,11 +59,11 @@ func GetTransaction(c *fiber.Ctx) error {
 		SendString(string(jsonStr))
 }
 
-func GetTodayTransaction(c *fiber.Ctx) error {
+func (con *TransactionController) GetTodayTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	startEpoch, endEpoch := utils.GetTodayRange()
-	transactionLists, err := databases.GetTransactionsInRangeByUserId(userId, startEpoch, endEpoch)
+	transactionLists, err := con.transactionRepo.GetTransactionsInRangeByUserId(userId, startEpoch, endEpoch)
 	if err != nil {
 		fmt.Println(err)
 		return c.
@@ -58,7 +78,7 @@ func GetTodayTransaction(c *fiber.Ctx) error {
 		SendString(string(jsonStr))
 }
 
-func CreateTransaction(c *fiber.Ctx) error {
+func (con *TransactionController) CreateTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	transaction := models.Transaction{
@@ -84,15 +104,15 @@ func CreateTransaction(c *fiber.Ctx) error {
 	}
 
 	// Validate wallet and category ids
-	if !(databases.DoesWalletExist(userId, transaction.Wallet) &&
-		databases.DoesCategoryExist(userId, transaction.Category)) {
+	if !(con.walletRepo.DoesWalletExist(userId, transaction.Wallet) &&
+		con.categoryRepo.DoesCategoryExist(userId, transaction.Category)) {
 		return c.
 			Status(http.StatusBadRequest).
 			SendString(utils.JSONMessage("Invalid wallet or category"))
 	}
 
 	// Create transaction
-	err = databases.CreateTransaction(userId, transaction)
+	err = con.transactionRepo.CreateTransaction(userId, transaction)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -107,7 +127,7 @@ func CreateTransaction(c *fiber.Ctx) error {
 /*
 Update transaction
 */
-func UpdateTransaction(c *fiber.Ctx) error {
+func (con *TransactionController) UpdateTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	// Parse body
@@ -130,7 +150,7 @@ func UpdateTransaction(c *fiber.Ctx) error {
 	}
 
 	// Update transaction
-	err = databases.UpdateTransaction(userId, transaction)
+	err = con.transactionRepo.UpdateTransaction(userId, transaction)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
@@ -145,7 +165,7 @@ func UpdateTransaction(c *fiber.Ctx) error {
 /*
 Delete transaction
 */
-func DeleteTransaction(c *fiber.Ctx) error {
+func (con *TransactionController) DeleteTransaction(c *fiber.Ctx) error {
 	userId := c.Locals("UserId").(string)
 
 	// Parse body
@@ -168,7 +188,7 @@ func DeleteTransaction(c *fiber.Ctx) error {
 	}
 
 	// Delete category
-	err = databases.DeleteTransaction(userId, deletingTransaction)
+	err = con.transactionRepo.DeleteTransaction(userId, deletingTransaction)
 	if err != nil {
 		return c.
 			Status(http.StatusConflict).
