@@ -4,15 +4,19 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type AuthMockMiddleware struct{}
+type AuthMockMiddleware struct {
+	userId string
+}
 
-func NewMock() *AuthMockMiddleware {
-	return &AuthMockMiddleware{}
+func NewMock(userId string) *AuthMockMiddleware {
+	return &AuthMockMiddleware{
+		userId,
+	}
 }
 
 func (mw *AuthMockMiddleware) RequireAccessToken(handler func(*fiber.Ctx) error) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
-		c.Locals("UserId", "fmWEwAx6QXokS5xnICKW")
+		c.Locals("UserId", mw.userId)
 
 		return handler(c)
 	}

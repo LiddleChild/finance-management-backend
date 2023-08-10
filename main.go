@@ -28,7 +28,7 @@ func main() {
 	// Create fiber instance
 	app := fiber.New()
 
-	auth := auth.NewMiddleware(auth_mw.NewMock())
+	auth := auth.NewMiddleware(auth_mw.NewMock("fmWEwAx6QXokS5xnICKW"))
 
 	app.Get("/", controllers.Ping)
 
